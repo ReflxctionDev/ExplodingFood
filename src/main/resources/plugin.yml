@@ -1,0 +1,5 @@
+name: ExplodingFood
+version: 1.0
+main: net.reflxction.explodingfood.ExplodingFood
+authors: [Reflxction]
+description: A plugin which gives you the ability to add explosions upon consuming food

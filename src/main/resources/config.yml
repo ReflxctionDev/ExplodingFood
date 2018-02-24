@@ -1,0 +1,7 @@
+Food: # Food types in which it should make an explosion once eaten
+  - 'COOKIE'
+  - 'RAW_CHICKEN'
+  - 'CARROT'
+ExplosionPower: 2 # Power of the explosion occurred when exploding, set to 0 if you don't want it to break blocks
+DisabledWorlds: # Worlds where it'd be safe to eat food without being bombed
+  - ''

@@ -23,6 +23,8 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
+import java.util.Random;
+
 public class FoodListener implements Listener {
 
     // Instance of the main class
@@ -46,9 +48,13 @@ public class FoodListener implements Listener {
             if (!p.hasPermission(avoidExplosion)) {
                 // Check if the food is contained inside the list specified in the config
                 if (main.food().contains(event.getItem().getType())) {
-                    // kaboom
-                    p.getWorld().createExplosion(p.getLocation(), main.explosionPower());
-
+                    // Check if the chance is met
+                    final Random random = new Random();
+                    int chance = random.nextInt(100) + 1;
+                    if (chance <= main.chance()) {
+                        // kaboom
+                        p.getWorld().createExplosion(p.getLocation(), main.explosionPower());
+                    }
                 }
             }
         }

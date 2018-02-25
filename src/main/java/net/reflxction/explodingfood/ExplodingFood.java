@@ -16,61 +16,47 @@
 
 package net.reflxction.explodingfood;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Random;
 
-/**
- * An easy to use, very configurable plugin which adds an explode-upon-consume function to the server
- */
-public final class ExplodingFood extends JavaPlugin {
+public class FoodListener implements Listener {
 
-    // Plugin startup logic
-    @Override
-    public void onEnable() {
-        // Save the config (we're using #saveResource so it saves comments in the config
-        saveResource("config.yml", false);
-        // Register the listener
-        getServer().getPluginManager().registerEvents(new FoodListener(this), this);
+    // Instance of the main class
+    private ExplodingFood main;
+
+    public FoodListener(ExplodingFood main) {
+        // Passing the instance
+        this.main = main;
     }
 
-
-    /**
-     * @return List of the disabled worlds
-     */
-    public List<World> disabledWorlds() {
-        List<World> worlds = new ArrayList<>();
-        List<String> worldsString = getConfig().getStringList("DisabledWorlds");
-        worldsString.forEach(s -> worlds.add(Bukkit.getWorld(s)));
-        return worlds;
-    }
-
-    /**
-     * @return List of the food that can bomb you
-     */
-    public List<Material> food() {
-        List<Material> food = new ArrayList<>();
-        List<String> foodString = getConfig().getStringList("Food");
-
-        try {
-            foodString.forEach(s -> food.add(Material.getMaterial(s.toUpperCase())));
-        } catch (NullPointerException ex) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "The specified material in the config is invalid. Please ensure that it's spelled correctly.");
+    // Event listener
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
+        // Instance of the player
+        final Player p = event.getPlayer();
+        // Permission of avoiding the explosion, ops don't have by default, which I found to be an issue idk
+        Permission avoidExplosion = new Permission("exploding-food.avoid-explosion", PermissionDefault.FALSE);
+        // Check if the world isn't in disabled worlds (specified in the config)
+        if (!main.disabledWorlds().contains(p.getWorld())) {
+            // Checking if the player doesn't have the exploding-food.avoid-explosion permission which protects them from exploding
+            if (!p.hasPermission(avoidExplosion)) {
+                // Check if the food is contained inside the list specified in the config
+                if (main.food().contains(event.getItem().getType())) {
+                    // Check if the chance is met
+                    final Random random = new Random();
+                    int chance = random.nextInt(100) + 1;
+                    if (chance <= main.chance()) {
+                        // kaboom
+                        p.getWorld().createExplosion(p.getLocation(), main.explosionPower());
+                    }
+                }
+            }
         }
-        System.out.println(food);
-        return food;
     }
-
-    /**
-     * @return Explosion power specified in the config
-     */
-    public int explosionPower() {
-        return getConfig().getInt("ExplosionPower");
-    }
-
 }
